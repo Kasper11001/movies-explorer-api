@@ -86,3 +86,12 @@ module.exports.login = (req, res, next) => {
     })
     .catch(next);
 };
+
+module.exports.logOut = (req, res, next) => {
+  res.cookie('jwt', {
+    maxAge: 0,
+    httpOnly: true,
+  });
+  res.send({ message: 'loggedOut' });
+  res.end();
+}
