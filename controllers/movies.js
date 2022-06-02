@@ -43,11 +43,7 @@ module.exports.createMovie = (req, res, next) => {
     owner,
   })
     .then((movie) => {
-      Movie.findById(movie._id).populate('owner')
-        .then((createdMovie) => {
-          res.send({ data: createdMovie });
-        })
-        .catch(next);
+      res.send({ data: movie });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
