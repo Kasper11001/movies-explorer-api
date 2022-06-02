@@ -5,7 +5,7 @@ const auth = require('../middlewares/auth');
 const {
   createUser,
   login,
-  logOut,
+  signOut,
 } = require('../controllers/users');
 const {
   validateCreateUser,
@@ -15,7 +15,7 @@ const NotFoundError = require('../errors/not-found-error');
 
 router.post('/signup', validateCreateUser, createUser);
 router.post('/signin', validateLogin, login);
-router.post('/logout', logOut);
+router.post('/signout', signOut);
 router.use('/users', userRouter);
 router.use('/movies', movieRouter);
 router.use(auth);
