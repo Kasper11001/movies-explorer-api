@@ -10,12 +10,11 @@ const { limiter } = require('./middlewares/limiter');
 const { cors } = require('./middlewares/cors');
 const router = require('./routes/routes');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-
-const { PORT = 3000 } = process.env;
+const { dataMovies, PORT } = require('./config');
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/moviesdb');
+mongoose.connect(dataMovies);
 
 app.use(requestLogger);
 app.use(helmet());
