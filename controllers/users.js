@@ -8,6 +8,7 @@ const ConflictError = require('../errors/conflict-error');
 
 module.exports.getUserInfo = (req, res, next) => {
   const currentUserId = req.user._id;
+
   User.findById(currentUserId)
     .orFail(() => next(new NotFoundError('Пользователь по указанному _id не найден.')))
     .then((user) => res.send({ data: user }))
@@ -17,23 +18,31 @@ module.exports.getUserInfo = (req, res, next) => {
 module.exports.updateProfileInfo = (req, res, next) => {
   const currentUserId = req.user._id;
   const { name, email } = req.body;
-  User.findByIdAndUpdate(
-    currentUserId,
-    { name, email },
-    {
-      new: true, // обработчик then получит на вход обновлённую запись
-      runValidators: true, // данные будут валидированы перед изменением
-    },
-  )
-    .orFail(() => next(new NotFoundError('Пользователь по указанному _id не найден.')))
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+
+  User.findById(currentUserId)
+    .then((user) => {
+      if (email !== user.email) {
+        next(new ConflictError('Передан некорректный Email при обновлении профиля.'));
       } else {
-        next(err);
+        User.findByIdAndUpdate(
+          currentUserId,
+          { name, email },
+          {
+            new: true, // обработчик then получит на вход обновлённую запись
+            runValidators: true, // данные будут валидированы перед изменением
+          },
+        )
+          .orFail(() => next(new NotFoundError('Пользователь по указанному _id не найден.')))
+          .then((correctUser) => res.send({ data: correctUser }))
+          .catch((err) => {
+            if (err.name === 'ValidationError') {
+              next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+            } else {
+              next(err);
+            }
+          });
       }
-    });
+    }).catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
