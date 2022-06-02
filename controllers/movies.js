@@ -56,16 +56,14 @@ module.exports.createMovie = (req, res, next) => {
 
 module.exports.deleteMovie = (req, res, next) => {
   Movie.findById(req.params._id)
-    .orFail(() => next(new NotFoundError('Карточка с указанным _id не найдена.')))
+    .orFail(() => next(new NotFoundError('Фильм с указанным _id не найден.')))
     .then((movie) => {
       if (!movie.owner.equals(req.user._id)) {
-        next(new ForbiddenError('Можно удалять только собственные фильмы'));
-      } else {
-        Movie.findByIdAndRemove(req.params._id)
-          .then((myMovie) => res.send({ data: myMovie }))
-          .catch(next);
+        return next(new ForbiddenError('Можно удалять только собственные фильмы'));
       }
+      return movie.remove();
     })
+    .then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));
