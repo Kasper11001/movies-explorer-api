@@ -87,11 +87,11 @@ module.exports.login = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.logOut = (req, res, next) => {
+module.exports.logOut = (req, res) => {
   res.cookie('jwt', {
     maxAge: 0,
     httpOnly: true,
   });
   res.send({ message: 'loggedOut' });
   res.end();
-}
+};

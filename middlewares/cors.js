@@ -1,5 +1,4 @@
 const cors = (req, res, next) => {
-  console.log('fgd');
   const { origin } = req.headers;
   const { method } = req;
   const requestHeaders = req.headers['access-control-request-headers'];
