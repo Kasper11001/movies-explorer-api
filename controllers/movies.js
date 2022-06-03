@@ -61,9 +61,8 @@ module.exports.deleteMovie = (req, res, next) => {
       if (!movie.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Можно удалять только собственные фильмы'));
       }
-      return movie.remove();
+      return movie.remove(() => res.send({ data: movie }));
     })
-    .then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Переданы некорректные данные при удалении карточки.'));

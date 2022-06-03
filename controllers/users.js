@@ -19,30 +19,25 @@ module.exports.updateProfileInfo = (req, res, next) => {
   const currentUserId = req.user._id;
   const { name, email } = req.body;
 
-  User.findById(currentUserId)
-    .then((user) => {
-      if (email !== user.email) {
-        next(new ConflictError('Передан некорректный Email при обновлении профиля.'));
+  User.findByIdAndUpdate(
+    currentUserId,
+    { name, email },
+    {
+      new: true, // обработчик then получит на вход обновлённую запись
+      runValidators: true, // данные будут валидированы перед изменением
+    },
+  )
+    .orFail(() => next(new NotFoundError('Пользователь по указанному _id не найден.')))
+    .then((correctUser) => res.send({ data: correctUser }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Такой пользователь уже существует.'));
       } else {
-        User.findByIdAndUpdate(
-          currentUserId,
-          { name, email },
-          {
-            new: true, // обработчик then получит на вход обновлённую запись
-            runValidators: true, // данные будут валидированы перед изменением
-          },
-        )
-          .orFail(() => next(new NotFoundError('Пользователь по указанному _id не найден.')))
-          .then((correctUser) => res.send({ data: correctUser }))
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
-            } else {
-              next(err);
-            }
-          });
+        next(err);
       }
-    }).catch(next);
+    });
 };
 
 module.exports.createUser = (req, res, next) => {
